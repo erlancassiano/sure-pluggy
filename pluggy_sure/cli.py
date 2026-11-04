@@ -60,7 +60,11 @@ def main(argv: list[str] | None = None) -> int:
         if args.since is None and args.days is None:
             # Padrão: incremental com lookback configurado
             args.days = settings.lookback_days
-        runner = build_runner(settings)
+        try:
+            runner = build_runner(settings)
+        except ConfigError as exc:
+            _emit_error(str(exc))
+            return int(getattr(exc, "code", 2) or 2)
         try:
             report = runner.run(
                 since=args.since,
