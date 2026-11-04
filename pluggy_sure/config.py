@@ -14,9 +14,16 @@ REQUIRED_ENV = (
     "SURE_URL",
 )
 
+# Placeholders do .env.example — se ainda estiverem assim, falha com mensagem clara
+_PLACEHOLDER_VALUES = {
+    "PLUGGY_CLIENT_ID": {"seu-client-id"},
+    "PLUGGY_CLIENT_SECRET": {"seu-client-secret"},
+    "SURE_API_KEY": {"sua-chave-api-sure"},
+}
 
-class ConfigError(SystemExit):
-    """Falha rápida de configuração (exit code 2 por padrão via SystemExit)."""
+
+class ConfigError(Exception):
+    """Falha de configuração (CLI traduz para exit code 2)."""
 
     def __init__(self, message: str, code: int = 2) -> None:
         super().__init__(message)
@@ -55,7 +62,9 @@ def load_dotenv(
     env_path = path if path is not None else Path(".env")
     if not env_path.is_file():
         return False
-    for raw_line in env_path.read_text(encoding="utf-8").splitlines():
+    # utf-8-sig remove BOM do Notepad/Windows que quebraria o nome da 1ª chave
+    text = env_path.read_text(encoding="utf-8-sig")
+    for raw_line in text.splitlines():
         line = raw_line.strip()
         if not line or line.startswith("#"):
             continue
@@ -64,7 +73,7 @@ def load_dotenv(
         if "=" not in line:
             continue
         key, value = line.split("=", 1)
-        key = key.strip()
+        key = key.strip().lstrip("\ufeff")
         if not key:
             continue
         value = value.strip()
@@ -107,6 +116,18 @@ def load_settings(*, dotenv: bool | Path = True) -> Settings:
             "Variáveis de ambiente obrigatórias ausentes: "
             + ", ".join(missing)
             + ". Defina-as antes de executar (veja .env.example)."
+        )
+
+    placeholders = [
+        n
+        for n, bad in _PLACEHOLDER_VALUES.items()
+        if os.environ.get(n, "").strip() in bad
+    ]
+    if placeholders:
+        raise ConfigError(
+            "Variáveis ainda com placeholder do .env.example: "
+            + ", ".join(placeholders)
+            + ". Preencha com valores reais no arquivo .env."
         )
 
     item_ids_raw = os.environ.get("PLUGGY_ITEM_IDS", "").strip()

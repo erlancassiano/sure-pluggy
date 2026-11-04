@@ -119,6 +119,46 @@ def test_load_settings_still_fails_if_dotenv_incomplete(tmp_path, monkeypatch):
     assert "http://localhost:3001" not in msg
 
 
+def test_load_dotenv_strips_utf8_bom(tmp_path, monkeypatch):
+    for k in REQUIRED_CLEAR:
+        monkeypatch.delenv(k, raising=False)
+    env_file = tmp_path / ".env"
+    # Simula Notepad salvando com BOM
+    content = (
+        "PLUGGY_CLIENT_ID=fake-client-bom\n"
+        "PLUGGY_CLIENT_SECRET=fake-secret-bom\n"
+        "SURE_API_KEY=fake-key-bom\n"
+        "SURE_URL=http://localhost:3001\n"
+    )
+    env_file.write_bytes(b"\xef\xbb\xbf" + content.encode("utf-8"))
+    settings = load_settings(dotenv=env_file)
+    assert settings.pluggy_client_id == "fake-client-bom"
+
+
+def test_placeholder_values_fail_fast(tmp_path, monkeypatch):
+    for k in REQUIRED_CLEAR:
+        monkeypatch.delenv(k, raising=False)
+    env_file = tmp_path / ".env"
+    env_file.write_text(
+        "\n".join(
+            [
+                "PLUGGY_CLIENT_ID=seu-client-id",
+                "PLUGGY_CLIENT_SECRET=seu-client-secret",
+                "SURE_API_KEY=sua-chave-api-sure",
+                "SURE_URL=http://localhost:3001",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(ConfigError) as exc:
+        load_settings(dotenv=env_file)
+    msg = str(exc.value)
+    assert "placeholder" in msg.casefold()
+    assert "PLUGGY_CLIENT_ID" in msg
+    assert "seu-client-id" not in msg  # não ecoa o valor
+
+
 REQUIRED_CLEAR = (
     "PLUGGY_CLIENT_ID",
     "PLUGGY_CLIENT_SECRET",

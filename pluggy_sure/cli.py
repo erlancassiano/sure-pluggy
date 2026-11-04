@@ -37,6 +37,13 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _emit_error(message: str) -> None:
+    """Garante que o erro apareça no PowerShell (stderr nativo às vezes some)."""
+    text = message.strip() or "erro desconhecido"
+    print(text, file=sys.stderr, flush=True)
+    print(text, flush=True)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
@@ -44,8 +51,8 @@ def main(argv: list[str] | None = None) -> int:
     try:
         settings = load_settings()
     except ConfigError as exc:
-        print(str(exc), file=sys.stderr)
-        return getattr(exc, "code", 2)
+        _emit_error(str(exc))
+        return int(getattr(exc, "code", 2) or 2)
 
     setup_logging(settings.log_level)
 
@@ -63,11 +70,13 @@ def main(argv: list[str] | None = None) -> int:
         except SystemExit as exc:
             # PluggyAuthError / SureAuthError / SureConnectionError
             msg = str(exc)
-            print(msg, file=sys.stderr)
+            if not msg or msg == str(getattr(exc, "code", "")):
+                msg = "falha na sincronização (veja logs)"
+            _emit_error(msg)
             code = getattr(exc, "code", None)
-            if code is not None:
-                return int(code)
-            if "Pluggy" in msg:
+            if isinstance(code, int):
+                return code
+            if "Pluggy" in msg or "credenciais" in msg.casefold():
                 return 2
             if "Sure fora" in msg:
                 return 3
