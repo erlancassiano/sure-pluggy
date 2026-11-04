@@ -1,0 +1,340 @@
+From 57a9d1100709b7015afd596f88f4850d4e5b74b6 Mon Sep 17 00:00:00 2001
+From: Cursor Agent <cursoragent@cursor.com>
+Date: Wed, 4 Nov 2026 22:39:18 +0000
+Subject: [PATCH] =?UTF-8?q?fix(i18n):=20corrigir=20tradu=C3=A7=C3=B5es=20p?=
+ =?UTF-8?q?t-BR=20incorretas=20no=20frontend?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Substitui termos em pt-PT (Descarregar, em falta), anglicismos (Resetar),
+espanholismo (TAE), inglês residual (Holdings) e calques sem sentido
+(Venda de Negócios, Taxa limitada) por equivalentes naturais em pt-BR.
+---
+ .../views/account_statements/pt-BR.yml        | 10 +++----
+ config/locales/views/components/pt-BR.yml     | 28 +++++++++----------
+ config/locales/views/credit_cards/pt-BR.yml   |  4 +--
+ config/locales/views/entries/pt-BR.yml        |  2 +-
+ config/locales/views/family_exports/pt-BR.yml |  4 +--
+ config/locales/views/holdings/pt-BR.yml       |  4 +--
+ config/locales/views/layout/pt-BR.yml         |  2 +-
+ config/locales/views/reports/pt-BR.yml        | 16 +++++------
+ config/locales/views/sessions/pt-BR.yml       |  2 +-
+ .../locales/views/settings/api_keys/pt-BR.yml |  2 +-
+ config/locales/views/settings/pt-BR.yml       | 10 +++----
+ config/locales/views/subscriptions/pt-BR.yml  |  2 +-
+ config/locales/views/users/pt-BR.yml          |  4 +--
+ 13 files changed, 45 insertions(+), 45 deletions(-)
+
+diff --git a/config/locales/views/account_statements/pt-BR.yml b/config/locales/views/account_statements/pt-BR.yml
+index 5a44e1c..e64b3b5 100644
+--- a/config/locales/views/account_statements/pt-BR.yml
++++ b/config/locales/views/account_statements/pt-BR.yml
+@@ -56,8 +56,8 @@ pt-BR:
+       unknown: Período desconhecido
+     reconciliation:
+       checks:
+-        closing_balance: Saldo de fechamento
+-        opening_balance: Saldo de abertura
++        closing_balance: Saldo final
++        opening_balance: Saldo inicial
+         period_movement: Movimentação do período
+         unknown_check: Verificação desconhecida
+       matched: Correspondente
+@@ -69,7 +69,7 @@ pt-BR:
+       account_label: Conta
+       account_last4_hint: Últimos quatro dígitos da conta
+       account_name_hint: Dica do nome da conta
+-      closing_balance: Saldo de fechamento
++      closing_balance: Saldo final
+       currency: Moeda
+       delete: Excluir
+       difference: Diferença
+@@ -81,11 +81,11 @@ pt-BR:
+       link_suggestion: Sugestão de vínculo
+       metadata_title: Metadados do extrato
+       no_suggestion: Ainda não há sugestão de conta.
+-      opening_balance: Saldo de abertura
++      opening_balance: Saldo inicial
+       period_end_on: Fim do período
+       period_start_on: Início do período
+       reconciliation_title: Conciliação
+-      reconciliation_unavailable: Adicione um período de extrato e um saldo de abertura ou fechamento e verifique se o Sure tem histórico de saldos para essas datas.
++      reconciliation_unavailable: Adicione um período de extrato e um saldo inicial ou final e verifique se o Sure tem histórico de saldos para essas datas.
+       reject: Rejeitar
+       save: Salvar extrato
+       statement_amount: Extrato
+diff --git a/config/locales/views/components/pt-BR.yml b/config/locales/views/components/pt-BR.yml
+index c496a0a..828b1d5 100644
+--- a/config/locales/views/components/pt-BR.yml
++++ b/config/locales/views/components/pt-BR.yml
+@@ -11,10 +11,10 @@ pt-BR:
+       institutions: "Instituições: %{count}"
+     transactions:
+       title: Transações
+-      seen: "Vistos: %{count}"
+-      imported: "Importado: %{count}"
+-      updated: "Atualizado: %{count}"
+-      skipped: "Ignorada: %{count}"
++      seen: "Vistas: %{count}"
++      imported: "Importadas: %{count}"
++      updated: "Atualizadas: %{count}"
++      skipped: "Ignoradas: %{count}"
+       fetching: "Buscando na corretora..."
+       protected:
+         one: "%{count} entrada protegida (não sobrescrita)"
+@@ -26,22 +26,22 @@ pt-BR:
+       import_locked: Importação de CSV
+       protected: Protegida
+     holdings:
+-      title: Holdings
+-      found: "Encontrado: %{count}"
+-      processed: "Processados: %{count}"
++      title: Posições
++      found: "Encontradas: %{count}"
++      processed: "Processadas: %{count}"
+     trades:
+-      title: Trocas
+-      imported: "Importado: %{count}"
+-      skipped: "Ignorado: %{count}"
+-      fetching: "Buscar atividades da corretora..."
++      title: Negociações
++      imported: "Importadas: %{count}"
++      skipped: "Ignoradas: %{count}"
++      fetching: "Buscando atividades da corretora..."
+     health:
+       title: Saúde
+       view_error_details: Ver detalhes do erro
+-      rate_limited: "Taxa limitada %{time_ago}"
++      rate_limited: "Limite de requisições atingido %{time_ago}"
+       recently: recentemente
+       errors: "Erros: %{count}"
+       pending_reconciled:
+-        one: "%{count} transações pendentes duplicadas reconciliadas"
++        one: "%{count} transação pendente duplicada reconciliada"
+         other: "%{count} transações pendentes duplicadas reconciliadas"
+       view_reconciled: Visualizar transações conciliadas
+       duplicate_suggestions:
+@@ -49,7 +49,7 @@ pt-BR:
+         other: "%{count} possíveis duplicados precisam ser revisados"
+       view_duplicate_suggestions: Ver duplicados sugeridos
+       stale_pending:
+-        one: "%{count} transações pendentes obsoletas (excluídas dos orçamentos)"
++        one: "%{count} transação pendente obsoleta (excluída dos orçamentos)"
+         other: "%{count} transações pendentes obsoletas (excluídas dos orçamentos)"
+       view_stale_pending: Veja as contas afetadas
+       stale_pending_count:
+diff --git a/config/locales/views/credit_cards/pt-BR.yml b/config/locales/views/credit_cards/pt-BR.yml
+index a7bc6c1..68a921a 100644
+--- a/config/locales/views/credit_cards/pt-BR.yml
++++ b/config/locales/views/credit_cards/pt-BR.yml
+@@ -6,7 +6,7 @@ pt-BR:
+     form:
+       annual_fee: Taxa anual
+       annual_fee_placeholder: '99'
+-      apr: TAE
++      apr: Juros a.a.
+       apr_placeholder: '15,99'
+       available_credit: Crédito disponível
+       available_credit_placeholder: '10000'
+@@ -18,7 +18,7 @@ pt-BR:
+     overview:
+       amount_owed: Valor Devido
+       annual_fee: Taxa Anual
+-      apr: TAE
++      apr: Juros a.a.
+       available_credit: Crédito Disponível
+       expiration_date: Data de Expiração
+       minimum_payment: Pagamento Mínimo
+diff --git a/config/locales/views/entries/pt-BR.yml b/config/locales/views/entries/pt-BR.yml
+index a088441..fc588b1 100644
+--- a/config/locales/views/entries/pt-BR.yml
++++ b/config/locales/views/entries/pt-BR.yml
+@@ -17,7 +17,7 @@ pt-BR:
+     protection:
+       tooltip: Protegido contra sincronização
+       title: Protegido contra sincronização
+-      description: As suas edições nesta entrada não serão sobrescritas pela sincronização do provedor.
++      description: Suas edições nesta entrada não serão sobrescritas pela sincronização do provedor.
+       locked_fields_label: "Campos bloqueados:"
+       unlock_button: Permitir sincronização para atualizar
+       unlock_confirm: Permitir que a sincronização atualize esta entrada? Suas alterações poderão ser sobrescritas na próxima sincronização.
+diff --git a/config/locales/views/family_exports/pt-BR.yml b/config/locales/views/family_exports/pt-BR.yml
+index b2a3932..91951d5 100644
+--- a/config/locales/views/family_exports/pt-BR.yml
++++ b/config/locales/views/family_exports/pt-BR.yml
+@@ -8,7 +8,7 @@ pt-BR:
+     delete_failed_confirmation: Tem certeza de que deseja excluir esta exportação falhada?
+     destroy:
+       success: Exportação excluída com sucesso
+-    export_not_ready: Exportação não está pronta para download
++    export_not_ready: Exportação não está pronta para baixar
+     exporting: Exportando...
+     index:
+       title: Exportações
+@@ -27,5 +27,5 @@ pt-BR:
+           failed: Falhou
+         actions:
+           delete: Excluir
+-          download: Descarregar
++          download: Baixar
+       empty: Nenhuma exportação ainda.
+diff --git a/config/locales/views/holdings/pt-BR.yml b/config/locales/views/holdings/pt-BR.yml
+index 39be1bc..e804150 100644
+--- a/config/locales/views/holdings/pt-BR.yml
++++ b/config/locales/views/holdings/pt-BR.yml
+@@ -17,9 +17,9 @@ pt-BR:
+       return: Retorno total
+       weight: Peso
+     missing_price_tooltip:
+-      description: Este investimento tem valores em falta e não conseguimos calcular
++      description: Este investimento tem valores ausentes e não conseguimos calcular
+         seus retornos ou valor.
+-      missing_data: Dados em falta
++      missing_data: Dados ausentes
+     show:
+       avg_cost_label: Custo Médio
+       current_market_price_label: Preço de Mercado Atual
+diff --git a/config/locales/views/layout/pt-BR.yml b/config/locales/views/layout/pt-BR.yml
+index 61a25dd..380bdf3 100644
+--- a/config/locales/views/layout/pt-BR.yml
++++ b/config/locales/views/layout/pt-BR.yml
+@@ -20,6 +20,6 @@ pt-BR:
+         privacy_policy: Política de Privacidade
+         terms_of_service: Termos de Serviço
+     trial:
+-      open_demo: Demo aberta
++      open_demo: Abrir demo
+       data_deleted_in_days: Os dados serão excluídos em %{days} dias
+       contribute: Contribuir
+\ No newline at end of file
+diff --git a/config/locales/views/reports/pt-BR.yml b/config/locales/views/reports/pt-BR.yml
+index d48dfe0..756c336 100644
+--- a/config/locales/views/reports/pt-BR.yml
++++ b/config/locales/views/reports/pt-BR.yml
+@@ -129,8 +129,8 @@ pt-BR:
+       total_return: Retorno Total
+       contributions: Contribuições do Período
+       withdrawals: Saques do Período
+-      top_holdings: Principais Aplicações
+-      holding: Holding
++      top_holdings: Principais posições
++      holding: Posição
+       weight: Peso
+       value: Valor
+       return: Retorno
+@@ -143,13 +143,13 @@ pt-BR:
+       no_data: "-"
+       view_details: Ver detalhes
+       holdings_count:
+-        one: "%{count} holding"
+-        other: "%{count} holdings"
++        one: "%{count} posição"
++        other: "%{count} posições"
+       sells_count:
+         one: "%{count} venda"
+         other: "%{count} vendas"
+-      holdings: Holdings
+-      sell_trades: Venda de Negócios
++      holdings: Posições
++      sell_trades: Negociações de venda
+       and_more: "+%{count} mais"
+     investment_flows:
+       title: Fluxos de investimento
+@@ -213,8 +213,8 @@ pt-BR:
+         contributions: Contribuições
+         withdrawals: Saques
+         this_period: este período
+-        top_holdings: Principais Aplicações
+-        holding: Holding
++        top_holdings: Principais posições
++        holding: Posição
+         weight: Peso
+         value: Valor
+         return: Retorno
+diff --git a/config/locales/views/sessions/pt-BR.yml b/config/locales/views/sessions/pt-BR.yml
+index b9f85d8..f1554d3 100644
+--- a/config/locales/views/sessions/pt-BR.yml
++++ b/config/locales/views/sessions/pt-BR.yml
+@@ -11,7 +11,7 @@ pt-BR:
+       failed: Não foi possível autenticar.
+     new:
+       email: Endereço de e-mail
+-      email_placeholder: voce@exemplo.com
++      email_placeholder: você@exemplo.com
+       forgot_password: Esqueceu sua senha?
+       password: Senha
+       submit: Entrar
+diff --git a/config/locales/views/settings/api_keys/pt-BR.yml b/config/locales/views/settings/api_keys/pt-BR.yml
+index ac4ce9f..ced0713 100644
+--- a/config/locales/views/settings/api_keys/pt-BR.yml
++++ b/config/locales/views/settings/api_keys/pt-BR.yml
+@@ -46,7 +46,7 @@ pt-BR:
+         create_new_key: "Criar Nova Chave de API"
+         description: "Configure sua nova chave de API com um nome descritivo e permissões apropriadas."
+         name_label: "Nome da Chave de API"
+-        name_placeholder: "ex: App de Produção, Dashboard de Analytics"
++        name_placeholder: "ex: App de orçamento, Rastreador de portfólio"
+         name_help: "Escolha um nome descritivo para ajudar a identificar o propósito desta chave."
+         permissions_label: "Permissões"
+         permissions_help: "Selecione as permissões que sua chave de API precisa. Você sempre pode criar uma nova chave com permissões diferentes."
+diff --git a/config/locales/views/settings/pt-BR.yml b/config/locales/views/settings/pt-BR.yml
+index 7b5bd4f..18e23b1 100644
+--- a/config/locales/views/settings/pt-BR.yml
++++ b/config/locales/views/settings/pt-BR.yml
+@@ -79,8 +79,8 @@ pt-BR:
+             é irreversível.
+           title: Excluir conta?
+         confirm_reset:
+-          body: Tem certeza de que deseja resetar sua conta? Isso excluirá todas as suas contas, categorias, comerciantes, tags e outros dados. Esta ação não pode ser desfeita.
+-          title: Resetar conta?
++          body: Tem certeza de que deseja redefinir sua conta? Isso excluirá todas as suas contas, categorias, comerciantes, tags e outros dados. Esta ação não pode ser desfeita.
++          title: Redefinir conta?
+         confirm_reset_with_sample_data:
+           body: Tem certeza de que deseja redefinir sua conta e carregar dados de exemplo? Isso excluirá seus dados existentes e os substituirá por dados de demonstração para que você possa explorar o Sure com segurança.
+           title: Redefinir conta e carregar dados de exemplo?
+@@ -94,9 +94,9 @@ pt-BR:
+         delete_account: Excluir conta
+         delete_account_warning: Excluir sua conta removerá permanentemente todos
+           os seus dados e não pode ser desfeito.
+-        reset_account: Resetar conta
+-        reset_account_warning: Resetar sua conta excluirá todas as suas contas, categorias, comerciantes, tags e outros dados, mas manterá sua conta de usuário intacta.
+-        reset_account_with_sample_data: Reiniciar e pré-carregar
++        reset_account: Redefinir conta
++        reset_account_warning: Redefinir sua conta excluirá todas as suas contas, categorias, comerciantes, tags e outros dados, mas manterá sua conta de usuário intacta.
++        reset_account_with_sample_data: Redefinir e pré-carregar
+         reset_account_with_sample_data_warning: Exclua todos os seus dados existentes e, em seguida, carregue novos dados de amostra para que você possa explorar um ambiente pré-configurado.
+         email: E-mail
+         first_name: Primeiro Nome
+diff --git a/config/locales/views/subscriptions/pt-BR.yml b/config/locales/views/subscriptions/pt-BR.yml
+index 207229e..40a579d 100644
+--- a/config/locales/views/subscriptions/pt-BR.yml
++++ b/config/locales/views/subscriptions/pt-BR.yml
+@@ -4,7 +4,7 @@ pt-BR:
+     self_hosted_alert: "%{product_name} não está disponível no modo self-hosted."
+     upgrade:
+       contribute_and_support_sure: "Contribuir e apoiar o Sure"
+-      cta: "Continue apoiando o desenvolvimento desta base de código!"
++      cta: "Continue apoiando o desenvolvimento deste projeto!"
+       header:
+         support: "Apoiar"
+         sure: "Sure"
+diff --git a/config/locales/views/users/pt-BR.yml b/config/locales/views/users/pt-BR.yml
+index ff41cbd..0968c6d 100644
+--- a/config/locales/views/users/pt-BR.yml
++++ b/config/locales/views/users/pt-BR.yml
+@@ -11,7 +11,7 @@ pt-BR:
+       success: Um novo e-mail de confirmação está na fila para envio.
+       no_pending_change: Nenhuma alteração de e-mail está pendente no momento!
+     reset:
+-      success: Sua conta foi resetada. Os dados serão excluídos em segundo plano em algum tempo.
++      success: Sua conta foi redefinida. Os dados serão excluídos em segundo plano em breve.
+       unauthorized: Você não está autorizado a realizar esta ação
+     reset_with_sample_data:
+-      success: Sua conta foi resetada e os dados de exemplo estão sendo preparados. Você verá os dados de demonstração em breve.
+\ No newline at end of file
++      success: Sua conta foi redefinida e os dados de exemplo estão sendo preparados. Você verá os dados de demonstração em breve.
+\ No newline at end of file
+-- 
+2.43.0
+
