@@ -151,3 +151,115 @@ def test_unpaired_transfer_listed():
     pairs, unpaired = match_own_transfers_and_bill_payments([out], mapped)
     assert pairs == []
     assert "lonely" in unpaired
+
+
+def test_match_own_transfer_with_bank_tariff_conta_azul():
+    """Conta Azul: crédito chega menor → diferença = tarifa bancária.
+
+    https://ajuda.contaazul.com/hc/pt-br/articles/46020337381133
+    """
+    mapped = {"acc-fake-bank-001", "acc-fake-bank-other"}
+    out = _tx(
+        pluggy_id="out-tariff",
+        account_id="acc-fake-bank-001",
+        nature="expense",
+        amount=Decimal("300.00"),
+        local_date=date(2026, 3, 6),
+    )
+    inn = _tx(
+        pluggy_id="in-tariff",
+        account_id="acc-fake-bank-other",
+        nature="income",
+        amount=Decimal("295.00"),  # R$ 5,00 de tarifa
+        local_date=date(2026, 3, 7),
+        name="Transferência recebida",
+    )
+    pairs, unpaired = match_own_transfers_and_bill_payments(
+        [out, inn],
+        mapped,
+        match_days=3,
+        tariff_max=Decimal("25.00"),
+    )
+    assert len(pairs) == 1
+    assert pairs[0].kind == "own_transfer"
+    assert pairs[0].tariff_amount == Decimal("5.00")
+    assert not unpaired
+
+
+def test_tariff_above_max_stays_unpaired():
+    mapped = {"acc-fake-bank-001", "acc-fake-bank-other"}
+    out = _tx(
+        pluggy_id="out-big",
+        account_id="acc-fake-bank-001",
+        amount=Decimal("300.00"),
+    )
+    inn = _tx(
+        pluggy_id="in-big",
+        account_id="acc-fake-bank-other",
+        nature="income",
+        amount=Decimal("250.00"),  # R$ 50 acima do teto 25
+        name="Transferência recebida",
+    )
+    pairs, unpaired = match_own_transfers_and_bill_payments(
+        [out, inn], mapped, tariff_max=Decimal("25.00")
+    )
+    assert pairs == []
+    assert "out-big" in unpaired
+
+
+def test_exact_match_preferred_over_tariff_candidate():
+    """Valor exato ganha de candidato com tarifa (evita pareamento errado)."""
+    mapped = {"acc-fake-bank-001", "acc-a", "acc-b"}
+    out = _tx(
+        pluggy_id="out-pref",
+        account_id="acc-fake-bank-001",
+        amount=Decimal("100.00"),
+    )
+    inn_tariff = _tx(
+        pluggy_id="in-tariff",
+        account_id="acc-a",
+        nature="income",
+        amount=Decimal("97.00"),
+        # Sem hint de transferência: só testa preferência de valor, não unpaired
+        name="Credito diverso",
+        pluggy_category="Other",
+    )
+    inn_exact = _tx(
+        pluggy_id="in-exact",
+        account_id="acc-b",
+        nature="income",
+        amount=Decimal("100.00"),
+        local_date=date(2026, 3, 8),  # mais longe, mas exato
+        name="Transferência recebida",
+    )
+    pairs, unpaired = match_own_transfers_and_bill_payments(
+        [out, inn_tariff, inn_exact],
+        mapped,
+        tariff_max=Decimal("25.00"),
+    )
+    assert len(pairs) == 1
+    assert pairs[0].right_id == "in-exact"
+    assert pairs[0].tariff_amount == Decimal("0")
+    assert "out-pref" not in unpaired
+    assert "in-exact" not in unpaired
+
+
+def test_tariff_disabled_when_max_zero():
+    mapped = {"acc-fake-bank-001", "acc-fake-bank-other"}
+    out = _tx(
+        pluggy_id="out-z",
+        account_id="acc-fake-bank-001",
+        amount=Decimal("100.00"),
+    )
+    inn = _tx(
+        pluggy_id="in-z",
+        account_id="acc-fake-bank-other",
+        nature="income",
+        amount=Decimal("98.00"),
+        name="Transferência recebida",
+    )
+    pairs, unpaired = match_own_transfers_and_bill_payments(
+        [out, inn], mapped, tariff_max=Decimal("0")
+    )
+    assert pairs == []
+    assert "out-z" in unpaired

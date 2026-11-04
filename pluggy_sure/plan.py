@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from decimal import Decimal
 from typing import Any
 
 from pluggy_sure.categorize import CategoryResult, Rule, categorize
 from pluggy_sure.normalize import NormalizedTx, payload_hash
-from pluggy_sure.reconcile import match_own_transfers_and_bill_payments
+from pluggy_sure.reconcile import DEFAULT_TARIFF_MAX, match_own_transfers_and_bill_payments
 from pluggy_sure.state import StateStore, TxState
 
 
@@ -52,6 +53,7 @@ def build_plan(
     sure_user_modified_ids: set[str] | None = None,
     previously_seen_ids_in_window: set[str] | None = None,
     match_days: int = 3,
+    tariff_max: Decimal = DEFAULT_TARIFF_MAX,
 ) -> PlanResult:
     """Monta o plano de sincronização.
 
@@ -70,10 +72,15 @@ def build_plan(
     seen_ids: set[str] = set()
 
     pairs, unpaired = match_own_transfers_and_bill_payments(
-        normalized, mapped_ids, match_days=match_days
+        normalized,
+        mapped_ids,
+        match_days=match_days,
+        tariff_max=tariff_max,
     )
     paired_ids = {p.left_id for p in pairs} | {p.right_id for p in pairs}
     result.unpaired_transfer_ids = list(unpaired)
+    # paired_ids: reservado para forçar fora-envelope se regras não casarem
+    _ = paired_ids
 
     for tx in normalized:
         seen_ids.add(tx.pluggy_id)
