@@ -153,7 +153,10 @@ def load_settings(*, dotenv: bool | Path = True) -> Settings:
 
 
 def load_accounts_map(path: Path) -> dict[str, str]:
-    """Carrega pluggy_account_id → sure_account_id de accounts_map.json."""
+    """Carrega pluggy_account_id → sure_account_id de accounts_map.json.
+
+    Usa utf-8-sig para tolerar BOM do PowerShell 5.1 (`Set-Content -Encoding utf8`).
+    """
     import json
 
     if not path.exists():
@@ -161,7 +164,20 @@ def load_accounts_map(path: Path) -> dict[str, str]:
             f"Arquivo de mapeamento de contas não encontrado: {path}. "
             "Copie accounts_map.example.json para accounts_map.json e preencha."
         )
-    with path.open(encoding="utf-8") as fh:
-        data = json.load(fh)
+    try:
+        with path.open(encoding="utf-8-sig") as fh:
+            data = json.load(fh)
+    except json.JSONDecodeError as exc:
+        raise ConfigError(
+            f"accounts_map.json inválido ({path}): {exc.msg} "
+            f"(linha {exc.lineno}, coluna {exc.colno}). "
+            "Confira vírgulas/aspas; se gravou no PowerShell 5.1, prefira "
+            "[IO.File]::WriteAllText com UTF8Encoding($false) para evitar BOM."
+        ) from None
+    if not isinstance(data, dict):
+        raise ConfigError(
+            f"accounts_map.json deve ser um objeto JSON {{pluggy_id: sure_id}}, "
+            f"recebido: {type(data).__name__}."
+        )
     # Ignora chaves de metadados começando com _
     return {k: str(v) for k, v in data.items() if not str(k).startswith("_")}

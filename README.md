@@ -20,6 +20,15 @@ cp accounts_map.example.json accounts_map.json
 cp rules.example.yaml rules.yaml
 ```
 
+No **PowerShell 5.1**, evite `Set-Content -Encoding utf8` (grava BOM). Prefira:
+
+```powershell
+$json = Get-Content .\accounts_map.example.json -Raw
+[IO.File]::WriteAllText("$PWD\accounts_map.json", $json, (New-Object Text.UTF8Encoding $false))
+```
+
+O loader já tolera BOM (`utf-8-sig`), mas gravar sem BOM evita surpresas em outras ferramentas.
+
 2. Variáveis obrigatórias (validadas na inicialização). O CLI e `load_settings()`
    carregam automaticamente o arquivo `.env` da pasta atual (stdlib; variáveis já
    definidas no ambiente têm precedência — não são sobrescritas):
