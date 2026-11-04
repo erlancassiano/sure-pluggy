@@ -20,7 +20,9 @@ cp accounts_map.example.json accounts_map.json
 cp rules.example.yaml rules.yaml
 ```
 
-2. Variáveis obrigatórias (validadas na inicialização):
+2. Variáveis obrigatórias (validadas na inicialização). O CLI e `load_settings()`
+   carregam automaticamente o arquivo `.env` da pasta atual (stdlib; variáveis já
+   definidas no ambiente têm precedência — não são sobrescritas):
 
 | Variável | Uso |
 |---|---|
@@ -87,8 +89,11 @@ Há um `docker-compose.yml` de exemplo para o sync.
 pytest -q
 
 # Teste de integração opcional (Sure local com external_id/source)
-SURE_URL=http://localhost:3001 SURE_API_KEY=... SURE_TEST_ACCOUNT_ID=... \
-  pytest -m integration tests/integration/test_sure_idempotency.py
+# Com .env preenchido, basta definir SURE_TEST_ACCOUNT_ID (conta "Teste"):
+# PowerShell:
+#   $env:SURE_TEST_ACCOUNT_ID = "<uuid>"
+#   python -m pytest -m integration tests/integration/test_sure_idempotency.py -q
+SURE_TEST_ACCOUNT_ID=... pytest -m integration tests/integration/test_sure_idempotency.py
 ```
 
 O teste `test_sure_idempotency_supported` **não** roda na suíte padrão (marcador `integration`). Use-o para confirmar se a imagem Docker do Sure já aceita `external_id`/`source` no POST.

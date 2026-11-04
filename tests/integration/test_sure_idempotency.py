@@ -19,17 +19,22 @@ from datetime import date
 import pytest
 import requests
 
+from pluggy_sure.config import load_dotenv
+
 pytestmark = pytest.mark.integration
 
 
 @pytest.fixture
 def sure_env():
+    # Carrega .env local se existir (não sobrescreve env já definido)
+    load_dotenv()
     url = os.environ.get("SURE_URL", "").rstrip("/")
     key = os.environ.get("SURE_API_KEY", "")
     account_id = os.environ.get("SURE_TEST_ACCOUNT_ID", "")
     if not url or not key or not account_id:
         pytest.fail(
-            "Defina SURE_URL, SURE_API_KEY e SURE_TEST_ACCOUNT_ID para o teste de integração"
+            "Defina SURE_URL, SURE_API_KEY e SURE_TEST_ACCOUNT_ID "
+            "(env ou .env) para o teste de integração"
         )
     return url, key, account_id
 
