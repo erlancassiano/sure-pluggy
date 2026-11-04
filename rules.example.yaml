@@ -1,0 +1,77 @@
+# Regras genéricas de categorização (primeira que casa vence).
+# Copie para rules.yaml e ajuste. Arquivo real fica fora do git.
+# Campos de match: description (regex CI), account_type, pluggy_category, sign (in|out)
+
+rules:
+  # 1. Transferência entre contas próprias
+  - match: "(mesma titularidade|transfer[eê]ncia entre contas|same person transfer)"
+    category: Transferências entre contas próprias
+    fora_envelope: true
+
+  # 2. RDB/CDB/rendimentos
+  - match: "\\b(RDB|CDB|aplica[cç][aã]o|resgate)\\b"
+    category: Investimentos
+    fora_envelope: true
+  - pluggy_category: "Investments"
+    category: Investimentos
+    fora_envelope: true
+  - pluggy_category: "Fixed Income Investment"
+    category: Investimentos
+    fora_envelope: true
+
+  # 3. Pagamento de fatura / ajuste de cartão
+  - match: "(pagamento de fatura|pagamento fatura|pix pago com cart[aã]o|ajuste de cart[aã]o|credit card payment)"
+    account_type: BANK
+    category: Pagamento de fatura
+    parent: Fora do orçamento
+    fora_envelope: true
+  - pluggy_category: "Credit card payment"
+    account_type: BANK
+    category: Pagamento de fatura
+    parent: Fora do orçamento
+    fora_envelope: true
+
+  # 4. Juros, IOF (exceto IOF internacional tratado no código), encargos, parcelas
+  - match: "\\b(juros|encargos|parcelamento de fatura|empr[eé]stimo)\\b"
+    category: Parcelas/Dívidas
+    fora_envelope: true
+  - match: "\\bIOF\\b"
+    # IOF de compra internacional é tratado no motor (segue a compra)
+    category: Parcelas/Dívidas
+    fora_envelope: true
+
+  # 5. Loterias (prioridade sobre Pix a pessoas)
+  - match: "(CAIXA ECONOMICA|LOTERIAS|loteria)"
+    sign: out
+    category: Loterias
+  - pluggy_category: "Gambling"
+    category: Loterias
+  - pluggy_category: "Lottery"
+    category: Loterias
+
+  # 6. Estabelecimentos
+  - match: "(IFOOD|99 ?Food|Outback|marmitaria|boulangerie)"
+    category: Restaurantes e delivery
+  - match: "(Daiso|Americanas|Shopee|Mercado Livre|Amazon)"
+    category: Compras
+  - match: "(ProGames|cinema|ingressos?)"
+    category: Lazer
+  - match: "(OXXO|hortifr[uú]ti|frios|padaria|mercado|supermercado)"
+    category: Alimentação casa
+  - match: "(Uber|ônibus|onibus|estacionamento|posto)"
+    category: Transporte
+  - match: "(farm[aá]cia|cl[ií]nica|dentista|hospital)"
+    category: Saúde
+  - match: "(pet ?shop|veterin[aá]rio)"
+    category: Pet
+  - match: "(Cursor|Apple|OpenAI|Google|Netflix|Spotify|Microsoft)"
+    category: Assinaturas
+    fora_envelope: true
+  - match: "(oficina|autope[cç]as|multa)"
+    category: Carro
+
+  # 7. Fallback por categoria Pluggy (aplicado no motor se nenhuma regex casar)
+  # Groceries → Alimentação casa, Eating out / Food delivery → Restaurantes, etc.
+  # Ver PLUGGY_CATEGORY_FALLBACK em categorize.py
+
+  # 8/9. Fallbacks finais (Pix a pessoas, Outros, Compras) ficam no motor.

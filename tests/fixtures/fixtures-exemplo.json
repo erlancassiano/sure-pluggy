@@ -1,0 +1,51 @@
+{
+  "_aviso": "DADOS FICTÍCIOS para testes. Nenhum valor, ID ou nome é real.",
+  "accounts_map": {
+    "acc-fake-bank-001": "sure-acc-fake-aaa",
+    "acc-fake-card-002": "sure-acc-fake-bbb"
+  },
+  "pluggy_accounts": [
+    {"id": "acc-fake-bank-001", "type": "BANK", "subtype": "CHECKING_ACCOUNT", "name": "Banco Exemplo Conta", "currencyCode": "BRL", "itemId": "item-fake-01"},
+    {"id": "acc-fake-card-002", "type": "CREDIT", "subtype": "CREDIT_CARD", "name": "Cartão Exemplo", "currencyCode": "BRL", "itemId": "item-fake-01"},
+    {"id": "acc-fake-unmapped-003", "type": "BANK", "subtype": "SAVINGS_ACCOUNT", "name": "Conta Não Mapeada", "currencyCode": "BRL", "itemId": "item-fake-02"}
+  ],
+  "pluggy_items": [
+    {"id": "item-fake-01", "status": "UPDATED", "lastUpdatedAt": "2026-05-10T09:00:00Z"},
+    {"id": "item-fake-02", "status": "UPDATED", "lastUpdatedAt": "2026-05-01T09:00:00Z"}
+  ],
+  "pluggy_transactions": [
+    {"id": "tx-fake-0001", "accountId": "acc-fake-bank-001", "date": "2026-03-01T02:30:00Z", "description": "Pix enviado  CAIXA ECONOMICA FEDERAL", "amount": -12.50, "currencyCode": "BRL", "category": "Transfer - PIX", "status": "POSTED"},
+    {"id": "tx-fake-0002", "accountId": "acc-fake-card-002", "date": "2026-03-02T15:00:00Z", "description": "IFOOD *RESTAURANTE EXEMPLO", "amount": 45.90, "currencyCode": "BRL", "category": "Food delivery", "status": "POSTED"},
+    {"id": "tx-fake-0003", "accountId": "acc-fake-card-002", "date": "2026-03-03T18:00:00Z", "description": "PROGAMES LOJA EXEMPLO", "amount": 80.00, "currencyCode": "BRL", "category": "Leisure", "status": "PENDING"},
+    {"id": "tx-fake-0004", "accountId": "acc-fake-card-002", "date": "2026-03-04T12:00:00Z", "description": "SERVICO DIGITAL EXEMPLO USD", "amount": 20.00, "currencyCode": "USD", "amountInAccountCurrency": 110.00, "category": "Digital services", "status": "POSTED"},
+    {"id": "tx-fake-0005", "accountId": "acc-fake-card-002", "date": "2026-03-04T12:01:00Z", "description": "IOF de compra internacional SERVICO DIGITAL EXEMPLO", "amount": 3.85, "currencyCode": "BRL", "category": "Taxes", "status": "POSTED"},
+    {"id": "tx-fake-0006", "accountId": "acc-fake-card-002", "date": "2026-03-05T12:00:00Z", "description": "LOJA ONLINE EXEMPLO USD", "amount": 15.00, "currencyCode": "USD", "category": "Shopping", "status": "PENDING"},
+    {"id": "tx-fake-0007", "accountId": "acc-fake-bank-001", "date": "2026-03-06T13:00:00Z", "description": "Pagamento de fatura CARTAO EXEMPLO", "amount": -500.00, "currencyCode": "BRL", "category": "Credit card payment", "status": "POSTED"},
+    {"id": "tx-fake-0008", "accountId": "acc-fake-bank-001", "date": "2026-03-06T14:00:00Z", "description": "Transferência mesma titularidade", "amount": -300.00, "currencyCode": "BRL", "category": "Same person transfer", "status": "POSTED"},
+    {"id": "tx-fake-0009", "accountId": "acc-fake-bank-001", "date": "2026-03-07T10:00:00Z", "description": "Aplicação RDB", "amount": -200.00, "currencyCode": "BRL", "category": "Investments", "status": "POSTED"},
+    {"id": "tx-fake-0010", "accountId": "acc-fake-bank-001", "date": "2026-03-08T11:00:00Z", "description": "OXXO EXEMPLO", "amount": -18.40, "currencyCode": "BRL", "category": "Groceries", "status": "POSTED"},
+    {"id": "tx-fake-0011", "accountId": "acc-fake-card-002", "date": "2026-03-09T11:00:00Z", "description": "DAISO EXEMPLO", "amount": 33.00, "currencyCode": "BRL", "category": "Shopping", "status": "POSTED", "creditCardMetadata": {"installmentNumber": 1, "totalInstallments": 3}},
+    {"id": "tx-fake-0012", "accountId": "acc-fake-bank-001", "date": "2026-03-10T11:00:00Z", "description": "Pix enviado FULANO DE TAL EXEMPLO", "amount": -25.00, "currencyCode": "BRL", "category": "Transfer - PIX", "status": "POSTED"},
+    {"id": "tx-fake-0013", "accountId": "acc-fake-card-002", "date": "2026-03-11T11:00:00Z", "description": "Estorno LOJA EXEMPLO", "amount": -33.00, "currencyCode": "BRL", "category": "Shopping", "status": "POSTED"},
+    {"id": "tx-fake-0014", "accountId": "acc-fake-unmapped-003", "date": "2026-03-12T11:00:00Z", "description": "QUALQUER COISA", "amount": -1.00, "currencyCode": "BRL", "category": "Other", "status": "POSTED"}
+  ],
+  "cenario_pendente_para_postado": {
+    "antes": {"id": "tx-fake-0003", "amount": 80.00, "status": "PENDING"},
+    "depois": {"id": "tx-fake-0003", "amount": 82.50, "status": "POSTED"},
+    "esperado": "update (mesmo sure_id), remove tag 'pendente'"
+  },
+  "esperado_categoria": {
+    "tx-fake-0001": "Loterias", "tx-fake-0002": "Restaurantes e delivery", "tx-fake-0003": "Lazer",
+    "tx-fake-0004": "Assinaturas", "tx-fake-0005": "Assinaturas", "tx-fake-0006": "ADIADO (aguardando_valor_brl)",
+    "tx-fake-0007": "Fora do orçamento (pagamento de fatura)", "tx-fake-0008": "Transferências entre contas próprias",
+    "tx-fake-0009": "Investimentos", "tx-fake-0010": "Alimentação casa", "tx-fake-0011": "Compras",
+    "tx-fake-0012": "Pix a pessoas", "tx-fake-0013": "Compras (estorno, nature=income)", "tx-fake-0014": "IGNORADA (conta não mapeada)"
+  },
+  "esperado_data_local": {"tx-fake-0001": "2026-02-28"},
+  "sure_api_respostas_exemplo": {
+    "post_transaction_201": {"id": "sure-tx-fake-1", "date": "2026-03-02", "amount_decimal": "45.9", "classification": "expense"},
+    "post_transaction_200_ja_existe": {"id": "sure-tx-fake-1"},
+    "post_transaction_422": {"error": "validation_failed", "message": "Transaction could not be created", "errors": ["Date can't be blank"]}
+  },
+  "env_falso": {"PLUGGY_CLIENT_ID": "fake-client-id", "PLUGGY_CLIENT_SECRET": "fake-secret-NAO-LOGAR", "SURE_API_KEY": "fake-sure-key-NAO-LOGAR", "SURE_URL": "http://localhost:3001"}
+}

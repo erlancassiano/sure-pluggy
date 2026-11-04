@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pluggy-sure"
+version = "0.1.0"
+description = "Sincronização unidirecional Pluggy → Sure (dados fictícios nos testes)"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "requests>=2.31",
+    "PyYAML>=6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "responses>=0.25",
+]
+
+[project.scripts]
+pluggy-sure = "pluggy_sure.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["pluggy_sure*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-m 'not integration' --strict-markers"
+markers = [
+    "integration: requer instância real do Sure (fora da suíte padrão)",
+]
+filterwarnings = ["ignore::DeprecationWarning"]
