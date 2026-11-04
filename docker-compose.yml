@@ -1,0 +1,25 @@
+# Exemplo: rodar o sync na mesma rede Docker do Sure.
+# Ajuste o nome do serviço do Sure (ex.: web) conforme o compose do Sure.
+services:
+  pluggy-sure-sync:
+    image: python:3.12-slim
+    working_dir: /app
+    volumes:
+      - ./:/app
+      # Estado e configs locais fora da imagem
+      - pluggy-sure-data:/data
+    env_file:
+      - .env
+    environment:
+      # Na rede do compose do Sure use o hostname do serviço, ex.: http://web:3000
+      # De um container apontando para o host Windows: http://host.docker.internal:3001
+      SURE_URL: ${SURE_URL:-http://host.docker.internal:3001}
+      SYNC_STATE_PATH: /data/state.sqlite
+      SYNC_ACCOUNTS_MAP_PATH: /data/accounts_map.json
+      SYNC_RULES_PATH: /data/rules.yaml
+    command: >
+      sh -c "pip install -e . &&
+             python -m pluggy_sure sync --days $${SYNC_LOOKBACK_DAYS:-15}"
+
+volumes:
+  pluggy-sure-data:

@@ -1,0 +1,35 @@
+# Segredos e configuração local (nunca versionar)
+.env
+accounts_map.json
+rules.yaml
+
+# Estado local da sincronização
+*.sqlite
+*.db
+state.sqlite
+
+# Logs
+*.log
+logs/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+dist/
+build/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# IDE / SO
+.idea/
+.vscode/
+*.swp
+.DS_Store
