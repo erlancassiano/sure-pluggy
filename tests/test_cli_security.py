@@ -33,7 +33,7 @@ def test_missing_env_var_fails_fast_with_clear_message(monkeypatch):
     ):
         monkeypatch.delenv(k, raising=False)
     with pytest.raises(ConfigError) as exc:
-        load_settings()
+        load_settings(dotenv=False)
     msg = str(exc.value)
     assert "PLUGGY_CLIENT_ID" in msg
     assert "obrigat" in msg.casefold()
@@ -195,7 +195,7 @@ def test_rerun_after_partial_failure_converges(
     assert plan1.actions[0].sure_id == plan2.actions[0].sure_id
 
 
-def test_cli_dry_run_requires_env(monkeypatch, capsys):
+def test_cli_dry_run_requires_env(monkeypatch, capsys, tmp_path):
     for k in (
         "PLUGGY_CLIENT_ID",
         "PLUGGY_CLIENT_SECRET",
@@ -203,6 +203,8 @@ def test_cli_dry_run_requires_env(monkeypatch, capsys):
         "SURE_URL",
     ):
         monkeypatch.delenv(k, raising=False)
+    # Evita carregar .env real do workspace durante o teste
+    monkeypatch.chdir(tmp_path)
     code = main(["sync", "--since", "2026-01-01", "--dry-run"])
     assert code == 2
     err = capsys.readouterr().err

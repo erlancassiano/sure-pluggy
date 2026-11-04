@@ -39,6 +39,43 @@ class Settings:
     transfer_match_days: int = 3  # TODO(spec): confirmar tolerância definitiva
 
 
+def load_dotenv(
+    path: Path | None = None,
+    *,
+    override: bool = False,
+) -> bool:
+    """Carrega pares KEY=VALUE de um arquivo .env para os.environ (stdlib).
+
+    - Não loga nem retorna valores.
+    - Por padrão NÃO sobrescreve variáveis já definidas no ambiente.
+    - Ignora linhas vazias e comentários (#).
+    - Aspas simples/duplas ao redor do valor são removidas.
+    Retorna True se o arquivo existia e foi lido.
+    """
+    env_path = path if path is not None else Path(".env")
+    if not env_path.is_file():
+        return False
+    for raw_line in env_path.read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#"):
+            continue
+        if line.startswith("export "):
+            line = line[7:].strip()
+        if "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        key = key.strip()
+        if not key:
+            continue
+        value = value.strip()
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in {'"', "'"}:
+            value = value[1:-1]
+        if not override and key in os.environ:
+            continue
+        os.environ[key] = value
+    return True
+
+
 def _require(name: str) -> str:
     value = os.environ.get(name, "").strip()
     if not value:
@@ -49,8 +86,21 @@ def _require(name: str) -> str:
     return value
 
 
-def load_settings() -> Settings:
-    """Valida variáveis obrigatórias e monta Settings. Sem logar segredos."""
+def load_settings(*, dotenv: bool | Path = True) -> Settings:
+    """Valida variáveis obrigatórias e monta Settings. Sem logar segredos.
+
+    Carrega `.env` automaticamente (se existir) antes da validação.
+    Variáveis já presentes no ambiente têm precedência.
+
+    Args:
+        dotenv: True = carrega Path(".env"); Path = arquivo específico;
+            False = não lê arquivo (útil em testes).
+    """
+    if dotenv is True:
+        load_dotenv()
+    elif isinstance(dotenv, Path):
+        load_dotenv(dotenv)
+
     missing = [n for n in REQUIRED_ENV if not os.environ.get(n, "").strip()]
     if missing:
         raise ConfigError(
