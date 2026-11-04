@@ -195,19 +195,35 @@ def test_rerun_after_partial_failure_converges(
     assert plan1.actions[0].sure_id == plan2.actions[0].sure_id
 
 
-def test_cli_dry_run_requires_env(monkeypatch, capsys, tmp_path):
-    for k in (
-        "PLUGGY_CLIENT_ID",
-        "PLUGGY_CLIENT_SECRET",
-        "SURE_API_KEY",
-        "SURE_URL",
-    ):
-        monkeypatch.delenv(k, raising=False)
+def test_cli_dry_run_requires_env(clear_sync_env, capsys, tmp_path):
     # Evita carregar .env real do workspace durante o teste
-    monkeypatch.chdir(tmp_path)
+    clear_sync_env.chdir(tmp_path)
     code = main(["sync", "--since", "2026-01-01", "--dry-run"])
     assert code == 2
     captured = capsys.readouterr()
     # Erro vai para stderr e stdout (visibilidade no PowerShell)
     text = captured.err + captured.out
     assert "PLUGGY_CLIENT_ID" in text or "obrigat" in text.casefold()
+    assert "Traceback" not in text
+
+
+def test_cli_missing_accounts_map_exit_2_no_traceback(
+    clear_sync_env, capsys, tmp_path
+):
+    """Sem accounts_map.json: exit 2, mensagem clara, sem traceback (cli.py)."""
+    clear_sync_env.setenv("PLUGGY_CLIENT_ID", "fake-client-id")
+    clear_sync_env.setenv("PLUGGY_CLIENT_SECRET", "fake-secret")
+    clear_sync_env.setenv("SURE_API_KEY", "fake-sure-key")
+    clear_sync_env.setenv("SURE_URL", "http://localhost:3001")
+    clear_sync_env.setenv("PLUGGY_ITEM_IDS", "item-fake-01")
+    clear_sync_env.chdir(tmp_path)
+    # rules.yaml presente; accounts_map.json ausente de propósito
+    (tmp_path / "rules.yaml").write_text("rules: []\n", encoding="utf-8")
+
+    code = main(["sync", "--since", "2026-01-01", "--dry-run"])
+    captured = capsys.readouterr()
+    text = captured.err + captured.out
+    assert code == 2
+    assert "accounts_map" in text.casefold() or "mapeamento" in text.casefold()
+    assert "Traceback" not in text
+    assert "FileNotFoundError" not in text

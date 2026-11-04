@@ -41,6 +41,43 @@ def runner(accounts_map, state, tmp_path):
     return SyncRunner(settings, pluggy, sure, state, rules, accounts_map)
 
 
+def test_unmapped_pluggy_account_warns_without_fetching_txs(runner, caplog):
+    """Conta Pluggy fora do mapa: aviso + sem list_transactions da conta."""
+    runner.pluggy.authenticate = MagicMock()
+    runner.pluggy.get_item = MagicMock(return_value={"id": "item-fake-01"})
+    runner.pluggy.warn_if_stale = MagicMock()
+    runner.pluggy.list_accounts = MagicMock(
+        return_value=[
+            {
+                "id": "acc-fake-unmapped-003",
+                "type": "BANK",
+                "balance": 10.0,
+                "name": "NaoDeveAparecerNoAviso",
+            },
+            {
+                "id": "acc-fake-bank-001",
+                "type": "BANK",
+                "balance": 100.0,
+            },
+        ]
+    )
+    runner.pluggy.list_transactions = MagicMock(return_value=[])
+    runner.sure.list_accounts = MagicMock(return_value=[])
+
+    from datetime import date
+
+    report = runner.run(since=date(2026, 1, 1), dry_run=True, now=date(2026, 3, 15))
+    assert any("não mapeada" in w for w in report.warnings)
+    assert any("acc-fake" in w for w in report.warnings)
+    # Sem nome de conta no aviso
+    assert all("NaoDeveAparecerNoAviso" not in w for w in report.warnings)
+    called_ids = [
+        c.args[0] for c in runner.pluggy.list_transactions.call_args_list
+    ]
+    assert "acc-fake-unmapped-003" not in called_ids
+    assert "acc-fake-bank-001" in called_ids
+
+
 def test_create_returning_200_records_mapping(runner, fixtures, account_types, state):
     raw = next(t for t in fixtures["pluggy_transactions"] if t["id"] == "tx-fake-0002")
     n = normalize_transaction(raw, "CREDIT")
