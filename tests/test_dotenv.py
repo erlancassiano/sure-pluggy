@@ -11,17 +11,7 @@ from pluggy_sure.config import ConfigError, load_dotenv, load_settings
 from pluggy_sure.logging_utils import setup_logging
 
 
-def test_load_dotenv_fills_missing_env_from_file(tmp_path, monkeypatch):
-    for k in (
-        "PLUGGY_CLIENT_ID",
-        "PLUGGY_CLIENT_SECRET",
-        "SURE_API_KEY",
-        "SURE_URL",
-        "PLUGGY_ITEM_IDS",
-        "LOG_LEVEL",
-    ):
-        monkeypatch.delenv(k, raising=False)
-
+def test_load_dotenv_fills_missing_env_from_file(tmp_path, clear_sync_env):
     env_file = tmp_path / ".env"
     # Valores fictícios — nunca reais
     env_file.write_text(
@@ -47,11 +37,11 @@ def test_load_dotenv_fills_missing_env_from_file(tmp_path, monkeypatch):
     assert settings.log_level == "DEBUG"
 
 
-def test_load_dotenv_does_not_override_existing(tmp_path, monkeypatch):
-    monkeypatch.setenv("PLUGGY_CLIENT_ID", "already-set-client")
-    monkeypatch.setenv("PLUGGY_CLIENT_SECRET", "already-set-secret")
-    monkeypatch.setenv("SURE_API_KEY", "already-set-key")
-    monkeypatch.setenv("SURE_URL", "http://already.example:3001")
+def test_load_dotenv_does_not_override_existing(tmp_path, clear_sync_env):
+    clear_sync_env.setenv("PLUGGY_CLIENT_ID", "already-set-client")
+    clear_sync_env.setenv("PLUGGY_CLIENT_SECRET", "already-set-secret")
+    clear_sync_env.setenv("SURE_API_KEY", "already-set-key")
+    clear_sync_env.setenv("SURE_URL", "http://already.example:3001")
 
     env_file = tmp_path / ".env"
     env_file.write_text(
@@ -76,15 +66,7 @@ def test_load_dotenv_missing_file_returns_false(tmp_path):
     assert load_dotenv(tmp_path / "nope.env") is False
 
 
-def test_load_dotenv_does_not_log_secret_values(tmp_path, monkeypatch, caplog):
-    for k in (
-        "PLUGGY_CLIENT_ID",
-        "PLUGGY_CLIENT_SECRET",
-        "SURE_API_KEY",
-        "SURE_URL",
-    ):
-        monkeypatch.delenv(k, raising=False)
-
+def test_load_dotenv_does_not_log_secret_values(tmp_path, clear_sync_env, caplog):
     secret = "fake-secret-NAO-LOGAR-dotenv"
     env_file = tmp_path / ".env"
     env_file.write_text(
@@ -106,9 +88,7 @@ def test_load_dotenv_does_not_log_secret_values(tmp_path, monkeypatch, caplog):
     assert secret not in caplog.text
 
 
-def test_load_settings_still_fails_if_dotenv_incomplete(tmp_path, monkeypatch):
-    for k in REQUIRED_CLEAR:
-        monkeypatch.delenv(k, raising=False)
+def test_load_settings_still_fails_if_dotenv_incomplete(tmp_path, clear_sync_env):
     env_file = tmp_path / ".env"
     env_file.write_text("SURE_URL=http://localhost:3001\n", encoding="utf-8")
     with pytest.raises(ConfigError) as exc:
@@ -119,9 +99,7 @@ def test_load_settings_still_fails_if_dotenv_incomplete(tmp_path, monkeypatch):
     assert "http://localhost:3001" not in msg
 
 
-def test_load_dotenv_strips_utf8_bom(tmp_path, monkeypatch):
-    for k in REQUIRED_CLEAR:
-        monkeypatch.delenv(k, raising=False)
+def test_load_dotenv_strips_utf8_bom(tmp_path, clear_sync_env):
     env_file = tmp_path / ".env"
     # Simula Notepad salvando com BOM
     content = (
@@ -135,9 +113,7 @@ def test_load_dotenv_strips_utf8_bom(tmp_path, monkeypatch):
     assert settings.pluggy_client_id == "fake-client-bom"
 
 
-def test_placeholder_values_fail_fast(tmp_path, monkeypatch):
-    for k in REQUIRED_CLEAR:
-        monkeypatch.delenv(k, raising=False)
+def test_placeholder_values_fail_fast(tmp_path, clear_sync_env):
     env_file = tmp_path / ".env"
     env_file.write_text(
         "\n".join(
@@ -157,11 +133,3 @@ def test_placeholder_values_fail_fast(tmp_path, monkeypatch):
     assert "placeholder" in msg.casefold()
     assert "PLUGGY_CLIENT_ID" in msg
     assert "seu-client-id" not in msg  # não ecoa o valor
-
-
-REQUIRED_CLEAR = (
-    "PLUGGY_CLIENT_ID",
-    "PLUGGY_CLIENT_SECRET",
-    "SURE_API_KEY",
-    "SURE_URL",
-)

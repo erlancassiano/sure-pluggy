@@ -37,6 +37,30 @@ def rules():
     return load_rules(RULES_EXAMPLE)
 
 
+# Chaves que testes de .env / CLI devem isolar entre si
+SYNC_ENV_KEYS = (
+    "PLUGGY_CLIENT_ID",
+    "PLUGGY_CLIENT_SECRET",
+    "SURE_API_KEY",
+    "SURE_URL",
+    "PLUGGY_ITEM_IDS",
+    "LOG_LEVEL",
+    "LOG_AMOUNTS",
+    "LOOKBACK_DAYS",
+    "STATE_PATH",
+    "SYNC_RULES_PATH",
+    "ACCOUNTS_MAP_PATH",
+)
+
+
+@pytest.fixture
+def clear_sync_env(monkeypatch):
+    """Remove variáveis de sync do ambiente — isola testes de .env/CLI."""
+    for key in SYNC_ENV_KEYS:
+        monkeypatch.delenv(key, raising=False)
+    return monkeypatch
+
+
 @pytest.fixture
 def env_falso(fixtures, monkeypatch):
     for k, v in fixtures["env_falso"].items():

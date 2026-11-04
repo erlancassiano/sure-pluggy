@@ -86,6 +86,7 @@ class SyncRunner:
         account_types: dict[str, str] = {}
         pluggy_balances: dict[str, Decimal] = {}
         all_normalized: list[NormalizedTx] = []
+        unmapped_account_warnings: list[str] = []
 
         item_ids = self.settings.pluggy_item_ids
         if not item_ids:
@@ -106,9 +107,14 @@ class SyncRunner:
                     pluggy_balances[aid] = to_decimal(acc["balance"])
 
                 if aid not in self.accounts_map:
-                    # Ainda normalizamos se vierem txs? Spec: ignorar + aviso.
-                    # Coletamos tipos; txs de não mapeadas entram no plan como skip
-                    # se forem listadas — só listamos contas mapeadas para reduzir I/O.
+                    # Spec: ignorar + aviso (só id truncado; sem nome/saldo).
+                    # Não listamos txs da conta para reduzir I/O; o aviso cobre a omissão.
+                    msg = (
+                        f"conta não mapeada ignorada: "
+                        f"pluggy_account_id={truncate_id(aid)}"
+                    )
+                    logger.warning("%s", msg)
+                    unmapped_account_warnings.append(msg)
                     continue
 
                 for raw in self.pluggy.list_transactions(
@@ -130,7 +136,10 @@ class SyncRunner:
         )
 
         report.unpaired_transfers = list(plan.unpaired_transfer_ids)
-        report.warnings = list(plan.warnings)
+        # Contas omitidas no fetch + avisos do plano (dedupe preservando ordem)
+        report.warnings = list(
+            dict.fromkeys([*unmapped_account_warnings, *plan.warnings])
+        )
         report.counts = counts_for_report(plan)
 
         if dry_run:
