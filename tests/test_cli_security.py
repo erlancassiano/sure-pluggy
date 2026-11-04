@@ -207,5 +207,7 @@ def test_cli_dry_run_requires_env(monkeypatch, capsys, tmp_path):
     monkeypatch.chdir(tmp_path)
     code = main(["sync", "--since", "2026-01-01", "--dry-run"])
     assert code == 2
-    err = capsys.readouterr().err
-    assert "PLUGGY_CLIENT_ID" in err or "obrigat" in err.casefold()
+    captured = capsys.readouterr()
+    # Erro vai para stderr e stdout (visibilidade no PowerShell)
+    text = captured.err + captured.out
+    assert "PLUGGY_CLIENT_ID" in text or "obrigat" in text.casefold()
