@@ -109,8 +109,27 @@ def _load_rules_from_dict(data: dict[str, Any]) -> list[Rule]:
 
 
 def load_rules(path: Path) -> list[Rule]:
-    with path.open(encoding="utf-8") as fh:
-        data = yaml.safe_load(fh) or {}
+    """Carrega rules.yaml (utf-8-sig). Arquivo ausente/ inválido → ConfigError."""
+    from pluggy_sure.config import ConfigError
+
+    if not path.exists():
+        raise ConfigError(
+            f"Arquivo de regras não encontrado: {path}. "
+            "Copie rules.example.yaml para rules.yaml e ajuste se quiser."
+        )
+    try:
+        with path.open(encoding="utf-8-sig") as fh:
+            data = yaml.safe_load(fh) or {}
+    except yaml.YAMLError as exc:
+        raise ConfigError(
+            f"rules.yaml inválido ({path}): {exc}. "
+            "Confira a sintaxe YAML; se gravou no PowerShell 5.1, evite BOM."
+        ) from None
+    if not isinstance(data, dict):
+        raise ConfigError(
+            f"rules.yaml deve ser um objeto YAML com chave 'rules', "
+            f"recebido: {type(data).__name__}."
+        )
     return _load_rules_from_dict(data)
 
 
