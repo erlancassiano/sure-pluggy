@@ -87,7 +87,7 @@ Há um `docker-compose.yml` de exemplo para o sync.
 
 ## Conciliação (resumo)
 
-- Transferências próprias e pagamento de fatura: casamento por valor Decimal **exato** e até 3 dias corridos; ponta sem par → tag `pendente-revisao` + relatório (nunca vira gasto de envelope)
+- Transferências próprias e pagamento de fatura: casamento por valor Decimal **exato** (preferência) ou com diferença ≤ `SYNC_TRANSFER_TARIFF_MAX_BRL` (tarifa Conta Azul: crédito menor que o débito), até 3 dias corridos; ponta sem par → tag `pendente-revisao` + relatório (nunca vira gasto de envelope)
 - Pagamento de fatura: fora dos envelopes (caixa/transferência); compra no cartão conta no envelope pela **data da compra** (competência)
 - Ao fim de cada sync: compara saldo Pluggy × Sure; `|diff| > R$ 1,00` → revisão (nada é ajustado automaticamente)
 

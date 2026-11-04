@@ -133,6 +133,7 @@ class SyncRunner:
             self.rules,
             previously_seen_ids_in_window=previously,
             match_days=self.settings.transfer_match_days,
+            tariff_max=self.settings.transfer_tariff_max,
         )
 
         report.unpaired_transfers = list(plan.unpaired_transfer_ids)

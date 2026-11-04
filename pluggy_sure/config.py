@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
+from decimal import Decimal, InvalidOperation
 from pathlib import Path
 
 
@@ -44,6 +45,8 @@ class Settings:
     log_level: str
     log_amounts: bool
     transfer_match_days: int = 3  # TODO(spec): confirmar tolerância definitiva
+    # Conta Azul: crédito pode chegar menor (tarifa). 0 desliga.
+    transfer_tariff_max: Decimal = Decimal("25.00")
 
 
 def load_dotenv(
@@ -149,7 +152,25 @@ def load_settings(*, dotenv: bool | Path = True) -> Settings:
         log_amounts=os.environ.get("LOG_AMOUNTS", "false").lower()
         in {"1", "true", "yes"},
         transfer_match_days=int(os.environ.get("SYNC_TRANSFER_MATCH_DAYS", "3")),
+        transfer_tariff_max=_parse_decimal_env(
+            "SYNC_TRANSFER_TARIFF_MAX_BRL", Decimal("25.00")
+        ),
     )
+
+
+def _parse_decimal_env(name: str, default: Decimal) -> Decimal:
+    raw = os.environ.get(name)
+    if raw is None or not str(raw).strip():
+        return default
+    try:
+        value = Decimal(str(raw).strip().replace(",", "."))
+    except (InvalidOperation, ValueError) as exc:
+        raise ConfigError(
+            f"{name} inválido (use número decimal, ex.: 25.00)."
+        ) from exc
+    if value < 0:
+        raise ConfigError(f"{name} deve ser ≥ 0.")
+    return value
 
 
 def load_accounts_map(path: Path) -> dict[str, str]:
